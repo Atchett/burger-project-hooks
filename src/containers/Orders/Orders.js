@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "../../axios/axios-orders";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
@@ -8,14 +8,24 @@ import Order from "../../components/Order/Order";
 import Spinner from "../../components/UI/Spinner/Spinner";
 
 const Orders = (props) => {
-  useEffect(() => {
-    props.onFetchOrders(props.token, props.userId);
-    //eslint-disable-next-line
-  }, []);
+  const orders = useSelector((state) => state.order.orders);
+  const loading = useSelector((state) => state.order.loading);
+  const token = useSelector((state) => state.auth.token);
+  const userId = useSelector((state) => state.auth.userId);
 
-  let orders = <Spinner />;
-  if (!props.loading) {
-    orders = props.orders.map((order) => (
+  const dispatch = useDispatch();
+  const onFetchOrders = useCallback(
+    (token, userId) => dispatch(actions.fetchOrders(token, userId)),
+    [dispatch]
+  );
+
+  useEffect(() => {
+    onFetchOrders(token, userId);
+  }, [onFetchOrders, token, userId]);
+
+  let ordersInt = <Spinner />;
+  if (!loading) {
+    ordersInt = orders.map((order) => (
       <Order
         key={order.id}
         ingredients={order.ingredients}
@@ -23,26 +33,7 @@ const Orders = (props) => {
       />
     ));
   }
-  return <div>{orders}</div>;
+  return <div>{ordersInt}</div>;
 };
 
-const mapStateToProps = (state) => {
-  return {
-    orders: state.order.orders,
-    loading: state.order.loading,
-    token: state.auth.token,
-    userId: state.auth.userId,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onFetchOrders: (token, userId) =>
-      dispatch(actions.fetchOrders(token, userId)),
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withErrorHandler(Orders, axios));
+export default withErrorHandler(Orders, axios);

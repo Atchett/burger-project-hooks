@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Button from "../../../components/UI/Button/Button";
 import classes from "./ContactData.module.css";
@@ -11,6 +11,16 @@ import * as actions from "../../../store/actions/index";
 import { updateObject, checkValidity } from "../../../shared/index";
 
 const ContactData = (props) => {
+  const ings = useSelector((state) => state.burgerBuilder.ingredients);
+  const price = useSelector((state) => state.burgerBuilder.totalPrice);
+  const loading = useSelector((state) => state.order.loading);
+  const token = useSelector((state) => state.auth.token);
+  const userId = useSelector((state) => state.auth.userId);
+
+  const dispatch = useDispatch();
+  const onOrderBurger = (orderData, token) =>
+    dispatch(actions.purchaseBurger(orderData, token));
+
   const [formIsValid, setFormIsValid] = useState(false);
   const [orderForm, setOrderForm] = useState({
     name: {
@@ -107,13 +117,13 @@ const ContactData = (props) => {
     }
 
     const order = {
-      ingredients: props.ings,
-      price: props.price,
+      ingredients: ings,
+      price: price,
       orderData: formData,
-      userId: props.userId,
+      userId: userId,
     };
 
-    props.onOrderBurger(order, props.token);
+    onOrderBurger(order, token);
   };
 
   const inputChangedHandler = (event, inputIdentifier) => {
@@ -166,7 +176,7 @@ const ContactData = (props) => {
     </form>
   );
 
-  if (props.loading) {
+  if (loading) {
     form = <Spinner />;
   }
   return (
@@ -177,24 +187,4 @@ const ContactData = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    ings: state.burgerBuilder.ingredients,
-    price: state.burgerBuilder.totalPrice,
-    loading: state.order.loading,
-    token: state.auth.token,
-    userId: state.auth.userId,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onOrderBurger: (orderData, token) =>
-      dispatch(actions.purchaseBurger(orderData, token)),
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withErrorHandler(ContactData, axios));
+export default withErrorHandler(ContactData, axios);

@@ -1,11 +1,12 @@
 import React, { useState, Fragment } from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import classes from "./Layout.module.css";
 import Toolbar from "../../components/Navigation/Toolbar/Toolbar";
 import SideDrawer from "../../components/Navigation/SideDrawer/SideDrawer";
 
 const Layout = (props) => {
   const [sideDrawerIsVisible, setSideDrawerIsVisible] = useState(false);
+  const isAuthenticated = useSelector((state) => state.auth.token !== null);
 
   const sideDrawerCloseHandler = () => {
     setSideDrawerIsVisible(false);
@@ -18,11 +19,11 @@ const Layout = (props) => {
   return (
     <Fragment>
       <Toolbar
-        isAuth={props.isAuthenticated}
+        isAuth={isAuthenticated}
         drawerToggleClicked={sideDrawerToggleHandler}
       />
       <SideDrawer
-        isAuth={props.isAuthenticated}
+        isAuth={isAuthenticated}
         open={sideDrawerIsVisible}
         closed={sideDrawerCloseHandler}
       />
@@ -31,10 +32,4 @@ const Layout = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    isAuthenticated: state.auth.token !== null,
-  };
-};
-
-export default connect(mapStateToProps)(Layout);
+export default Layout;
